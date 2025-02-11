@@ -1,0 +1,24 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t fastapi-app .
+          docker tag fastapi-app your-dockerhub-username/fastapi-app:latest
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push your-dockerhub-username/fastapi-app:latest
+
+      - name: Deploy to Server
+        run: |
+          ssh user@your-server-ip "docker pull your-dockerhub-username/fastapi-app:latest && docker stop fastapi-app || true && docker rm fastapi-app || true && docker run -d -p 8000:8000 --name fastapi-app your-dockerhub-username/fastapi-app:latest"
