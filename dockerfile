@@ -7,4 +7,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN apt-get update && apt-get install -y nginx
+
+COPY nginx.conf /etc/nginx/sites-available/default
+
+EXPOSE 80
+
+CMD service nginx start && uvicorn main:app --host 0.0.0.0 --port 8000
